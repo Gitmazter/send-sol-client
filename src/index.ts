@@ -9,10 +9,10 @@ async function main() {
     const payer = initializeKeypair(); 
     const connection = new web3.Connection(web3.clusterApiUrl('devnet'));
     const amount = await question("How much sol would you like to send?  ")
-    const receiver = await question("Which address would you like to send it to?  ")
-    await sendSol(connection, payer, amount, receiver)
+    const receiverBs58 = await question("Which address would you like to send it to?  ")
+    //const receiver = publicKeyFromBs58(receiverBs58)
+    await sendSol(connection, payer, amount, receiverBs58)
 }   
-
 main()
 
 function initializeKeypair(): web3.Keypair {
@@ -22,6 +22,15 @@ function initializeKeypair(): web3.Keypair {
     return keypairFromSecretKey;
 }
 
+// function publicKeyFromBs58(receiver: string): any {
+//     try {
+//         return new web3.PublicKey(receiver)
+//     }
+//     catch (err) {
+//         throw new Error("Invalid public key, please retry")
+//     }
+// }
+ 
 async function sendSol(connection: web3.Connection, payer: web3.Keypair, amount: string, receiver: string) {  
     //console.log(connection, payer, amount, receiver);
     /* Inside this function, we need to:
@@ -32,10 +41,10 @@ async function sendSol(connection: web3.Connection, payer: web3.Keypair, amount:
         send the transaction. 
     */
     const transaction = new web3.Transaction()
-    const receiverWeb3 = new web3.PublicKey(receiver)
+
     const instructions = web3.SystemProgram.transfer({
         fromPubkey: payer.publicKey,
-        toPubkey: receiverWeb3,
+        toPubkey: new web3.PublicKey(receiver),
         lamports: Number(amount)*web3.LAMPORTS_PER_SOL
     })
     transaction.add(instructions)
